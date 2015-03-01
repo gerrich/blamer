@@ -1,7 +1,22 @@
 <html>
-  <head></head>
+  <head>
+    <style>
+      .shingled {
+        font-family: 'Courier New'
+      }
+    </style>
+  </head>
   <body>
     <h1>FILE</h1>
+    <p>encoding: {{ encoding }}</p>
+    <p>fname: {{ fname | e }}</p>
+    <h2>SHINGLED</h2>
+    <div class='shingled'>
+    {% for record in shingles %}
+    <b>{{- record.value }}</b>&nbsp;{{ record.line | e-}}<br/>
+    {% endfor %}
+    <div>
+    <h2>ORIGINAL</h2>
     <pre>
       {{- data |e -}}
     </pre>
