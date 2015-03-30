@@ -32,11 +32,18 @@ process_file () {
 
 export -f process_file
 
-(cd ${find_path} && find . -type f -printf "%P\n") |\
-xargs -I{} -P10 bash -c 'process_file {}'
+#(cd ${find_path} && find . -type f -printf "%P\n") |\
+#xargs -I{} -P10 bash -c 'process_file {}'
 
-exit 0
-find "${shingle_dir}" -type f | xargs -I{} cat {} |\
+#exit 0
+append_file_tag () {
+  file="$1"
+  basename=$(basename $file)
+  cat "${file}" | perl -lne 'print "$_\t'$basename'"'
+}
+
+export -f append_file_tag
+find "${shingle_dir}" -type f | xargs -I{} bash -c 'append_file_tag {}' |\
 LC_ALL=C sort -t'	' -k1,1 > ${shingle_dir}.all.txt
 
 

@@ -10,6 +10,7 @@ import os
 from jinja2 import Environment, BaseLoader, FileSystemLoader
 import gzip
 import shingle
+import subprocess
 
 def decode_smart(data):
   for encoding in ['utf8','cp1251']:
@@ -18,6 +19,17 @@ def decode_smart(data):
     except:
       pass
   return data, None
+
+def look_shingles(records):
+  base_path="/home/ejudge/blamer/shingles/000024.all.txt"
+  for record in records:
+    #entries =  subprocess.Popen(['echo', '1', '2', '3'], stdout=subprocess.PIPE).communicate()[0]
+    entries =  subprocess.Popen(['look',record['value'], base_path], stdout=subprocess.PIPE).communicate()[0]
+    tags=[]
+    for entry in entries:
+      fields= entry.split(' ')
+      tags.append(fields[0])
+    record['tags'] = tags
 
 # Our CherryPy application
 class Root(object):
@@ -72,6 +84,7 @@ class Root(object):
 
     data,encoding = decode_smart(data)
     shingles = shingle.make_shingles(data.split("\n"))
+    look_shingles(shingles)
 
     #return "[" + runid + "] %s/%s/%s"%(a4,a3,a2)
     template = self.env.get_template('data.html')

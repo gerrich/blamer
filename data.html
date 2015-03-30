@@ -13,7 +13,7 @@
     <h2>SHINGLED</h2>
     <div class='shingled'>
     {% for record in shingles %}
-    <b>{{- record.value }}</b>&nbsp;{{ record.line | e-}}<br/>
+    <b>{{- record.value }}</b> # {{ record.tags | length }} # {{ record.line | e-}}<br/>
     {% endfor %}
     <div>
     <h2>ORIGINAL</h2>
