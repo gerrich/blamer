@@ -33,8 +33,8 @@ process_file () {
 }
 
 export -f process_file
-(cd ${find_path} && find . -type f -printf "%P\n") |\
-xargs -I{} -P10 bash -c 'process_file {}'
+#(cd ${find_path} && find . -type f -printf "%P\n") |\
+#xargs -I{} -P10 bash -c 'process_file {}'
 
 #exit 0
 append_file_tag () {
@@ -44,8 +44,8 @@ append_file_tag () {
 }
 
 export -f append_file_tag
-find "${shingle_dir}" -type f | xargs -I{} bash -c 'append_file_tag {}' |\
-LC_ALL=C sort -t'	' -k1,1 > ${shingle_dir}.all.txt
+#find "${shingle_dir}" -type f | xargs -I{} bash -c 'append_file_tag {}' |\
+#LC_ALL=C sort -t'	' -k1,1 > ${shingle_dir}.all.txt
 
 
 find $audit_path -type f |\

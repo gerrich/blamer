@@ -1,10 +1,37 @@
 <html>
   <head></head>
   <body>
+    <style>
+      table {
+        border-collapse: collapse; 
+      }
+      tr, th, td {
+        text-align: left;
+        border: 1px solid;
+#        padding: 0px;
+#        margin: 0px;
+      }
+    </style>
     <h1>HEllo JINJA!</h1>
     
+    <table>
+    <tr>
+      <th>runid</th>
+      <th>login</th>
+      <th>uid</th>
+      <th>status</th>
+      <th>date</th>
+      <th>pdath</th>
+    </tr>  
     {% for item in files %}
-    <a href="/file?runid={{ item[1]|e }}">{{ item[0] | e }}</a></br>
+    <tr>
+      <td><a href="/file?runid={{ item.runid | e }}">{{ item.runid | e }}</a></td>
+      <td>{{ item.login | e }}</td>
+      <td>{{ item.uid }}</td>
+      <td>{{ item.status | e }}</td>
+      <td>{{ item.date | e }}</td>
+      <td>{{ item.path | e }}</td>
+    </tr>
     {% endfor %}
   </body>
 </html>

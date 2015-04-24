@@ -56,10 +56,13 @@ class Root(object):
           runid = str(int(runid))
         except e:
           pass
-        file_list.append([path, runid])
+        file_list.append({'runid':runid, 'path':path})
+    
+    sources_ans = backend.ask_audit([f['runid'] for f in file_list])
+    backend.process_audit_response(sources_ans, file_list)
 
     template = self.env.get_template('list.html')
-    return template.render(files=file_list)
+    return template.render(files=sorted(file_list, key=lambda x: int(x['runid']), reverse=True))
 
   @cherrypy.expose
   def diff(self, contest_id="26", runid_a="", runid_b=""):

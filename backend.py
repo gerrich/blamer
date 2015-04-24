@@ -75,10 +75,15 @@ def process_audit_response(data, sources):
   src_dict = {}
   for line in data.split("\n"):
     fields = line.split("\t")
-    src_dict[fields[0]] = fields
+    try:
+      src_dict[fields[0]] = {"runid":fields[0], 'status':fields[1], 'login':fields[2], 'uid':fields[3], "date":fields[4]} 
+    except:
+      pass
+
   for source in sources:
-    if re.match(r'^\d+$', source[0]):
-      key = "%d"%(int(source[0]),)
+    if re.match(r'^\d+$', source['runid']):
+      key = "%d"%(int(source['runid']),)
       if src_dict.has_key(key):
-        source += src_dict[key]
+        #source.append(src_dict[key])
+        source.update(dict(source.items() + src_dict[key].items()))
     
