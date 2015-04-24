@@ -10,6 +10,13 @@
     <h1>FILE</h1>
     <p>encoding: {{ encoding }}</p>
     <p>fname: {{ fname | e }}</p>
+    <p>comment: {{ comment | e }}</p>
+    <h2>SOURCES</h2>
+    {% for source in sources[:30] %}
+      <a href="/file?runid={{source[0]|e}}">{{ source|join(' # ')|e }}</a>
+      <a href="/diff?runid_a={{runid|e}}&runid_b={{source[0]|e}}"> diff {{source[0]|e}}</a>
+    <br/> 
+    {% endfor %}
     <h2>SHINGLED</h2>
     <div class='shingled'>
     {% for record in shingles %}

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
 import sys
 import hashlib
 
@@ -7,7 +10,13 @@ def make_shingles(file):
   line_number = 0
   for line in file:
     line = line.rstrip('\n')
-    value = hashlib.md5(line).hexdigest()
+    #print type(line), ":::", line
+    value = ''
+    if isinstance(line, unicode):
+      value = hashlib.md5(line.encode("utf-8")).hexdigest()
+    else:
+      value = hashlib.md5(line).hexdigest()
+
     result.append({'line_number':line_number, 'value':value, 'line':line})
     line_number += 1
   return result

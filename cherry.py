@@ -11,6 +11,9 @@ from jinja2 import Environment, BaseLoader, FileSystemLoader
 import gzip
 import shingle
 import subprocess
+import backend
+import difflib
+import re
 
 def decode_smart(data):
   for encoding in ['utf8','cp1251']:
@@ -20,22 +23,13 @@ def decode_smart(data):
       pass
   return data, None
 
-def look_shingles(records):
-  base_path="/home/ejudge/blamer/shingles/000024.all.txt"
-  for record in records:
-    #entries =  subprocess.Popen(['echo', '1', '2', '3'], stdout=subprocess.PIPE).communicate()[0]
-    entries =  subprocess.Popen(['look',record['value'], base_path], stdout=subprocess.PIPE).communicate()[0]
-    tags=[]
-    for entry in entries:
-      fields= entry.split(' ')
-      tags.append(fields[0])
-    record['tags'] = tags
-
 # Our CherryPy application
 class Root(object):
   def __init__(self):
     self.env = Environment(loader=FileSystemLoader('/home/ejudge/blamer'))
-    self.runs_path = "/home/ejudge/ejudge-home/judges/000024/var/archive/runs/"
+
+  def get_runs_path(self, contest_id):
+    return "/home/ejudge/ejudge-home/judges/%06d/var/archive/runs/"%(int(contest_id))
 
   @cherrypy.expose
   def index(self):
@@ -51,24 +45,66 @@ class Root(object):
     return "items " + str(items)
   
   @cherrypy.expose
-  def list(self):
+  def list(self, contest_id="26"):
     file_list=[]
-    for root, dirs, files in os.walk(self.runs_path):
+    for root, dirs, files in os.walk(self.get_runs_path(contest_id)):
       for file in files:
-        file_list.append(os.path.join(root, file))
-        #if file.endswith(".txt"):
-        #  print(os.path.join(root, file))
+        path = os.path.join(root, file)
+        basename = os.path.basename(file)
+        runid = re.sub('\..*$','', basename)
+        try:
+          runid = str(int(runid))
+        except e:
+          pass
+        file_list.append([path, runid])
+
     template = self.env.get_template('list.html')
     return template.render(files=file_list)
 
   @cherrypy.expose
-  def file(self, runid=""):
-    id=int(runid)
-    codes=list('0123456789ABCDEFGHIJKLMNOPQRTSTUVWXYZ')
+  def diff(self, contest_id="26", runid_a="", runid_b=""):
+    data_a, encoding_a, fname_a = self.get_data_by_runid(contest_id, int(runid_a))
+    data_b, encoding_b, fname_b = self.get_data_by_runid(contest_id, int(runid_b))
+   
+    differ = difflib.HtmlDiff(tabsize = 2)
+    table = differ.make_table(data_a.split('\n'), data_b.split('\n'))
+
+    template = self.env.get_template('diff.html')
+    return template.render(
+        data_a=data_a,
+        data_b=data_b,
+        table=table)
+
+  @cherrypy.expose
+  def file(self, runid="", contest_id="26"):
+    data, encoding, fname = self.get_data_by_runid(contest_id, int(runid))
+
+    #shingles = []
+    shingles = shingle.make_shingles(data.split(u"\n"))
+    #look_shingles(shingles)
+    ans = backend.ask_shingles(backend.filter_records(shingles))
+    sources = []
+    backend.parse_tsv_response(ans, shingles, sources)
+    sources_ans = backend.ask_audit([p[0] for p in sources])
+    backend.process_audit_response(sources_ans, sources)
+
+    #return "[" + runid + "] %s/%s/%s"%(a4,a3,a2)
+    template = self.env.get_template('data.html')
+    return template.render(
+        data = data,
+        encoding=encoding,
+        fname = fname,
+        runid=runid,
+        shingles = shingles,
+        comment="type(data): %s len(ans): %d => %s"%(type(data), len(ans), ans[:1000] +  "\n >>>"+ " ".join([r['value'] for r in shingles])),
+        sources = sources)
+
+  def get_data_by_runid(self, contest_id, id):
+    codes=list('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
     a2 = codes[(id >> 5)%32]
     a3 = codes[(id >> 10)%32]
     a4 = codes[(id >> 15)%32]
-    path = self.runs_path + "%s/%s/%s/%06d"%(a4,a3,a2,id)
+    path = self.get_runs_path(contest_id) + "%s/%s/%s/%06d"%(a4,a3,a2,id)
 
     data='UNDEFINED'
     fname=path
@@ -83,12 +119,9 @@ class Root(object):
       f.close()
 
     data,encoding = decode_smart(data)
-    shingles = shingle.make_shingles(data.split("\n"))
-    look_shingles(shingles)
+    return data,encoding,fname
 
-    #return "[" + runid + "] %s/%s/%s"%(a4,a3,a2)
-    template = self.env.get_template('data.html')
-    return template.render(data = data, encoding=encoding, fname = fname, shingles = shingles)
+
 
 cherrypy.config.update({'engine.autoreload.on': False})
 cherrypy.server.unsubscribe()
