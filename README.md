@@ -1,10 +1,11 @@
 # blamer
 
-search copyright violations in students code listings
+Search copyright violations in students code listings
 
 Frontend using Cherrypy
-
 Backend using some cpp
+
+Designed as administrator view tool for ejudge contest management system
 
 TODO:
 * draw matching objects on diff view
