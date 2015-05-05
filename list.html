@@ -1,5 +1,5 @@
 <html>
-  <head></head>
+  <head><title>Contest: {{ contest_id | e }} listings</title></head>
   <body>
     <style>
       table {
@@ -12,7 +12,8 @@
 #        margin: 0px;
       }
     </style>
-    <h1>HEllo JINJA!</h1>
+    <h1><a href='/home'>Поймай жука!</a></h1>
+    <h2>Contest: {{ contest_id | e }} listings</h2>
     
     <table>
     <tr>
@@ -25,7 +26,7 @@
     </tr>  
     {% for item in files %}
     <tr>
-      <td><a href="/file?runid={{ item.runid | e }}">{{ item.runid | e }}</a></td>
+      <td><a href="/file?runid={{ item.runid | e }}&contest_id={{ contest_id|e }}">{{ item.runid | e }}</a></td>
       <td>{{ item.login | e }}</td>
       <td>{{ item.uid }}</td>
       <td>{{ item.status | e }}</td>

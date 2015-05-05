@@ -4,17 +4,6 @@
 import socket 
 import re
 
-def look_shingles(records):
-  base_path="/home/ejudge/blamer/shingles/000024.all.txt"
-  for record in records:
-    #entries =  subprocess.Popen(['echo', '1', '2', '3'], stdout=subprocess.PIPE).communicate()[0]
-    entries =  subprocess.Popen(['look',record['value'], base_path], stdout=subprocess.PIPE).communicate()[0]
-    tags=[]
-    for entry in entries:
-      fields= entry.split(' ')
-      tags.append(fields[0])
-    record['tags'] = tags
-
 def filter_records(shingles):
   result = []
   for shingle in shingles:
@@ -26,8 +15,9 @@ def filter_records(shingles):
 def ask_shingles(records):
   return ask_backend("find", [r['value'] for r in records])
 
-def ask_audit(keys):
-  return ask_backend("audit", ["%d"%int(k) for k in keys if re.match(r'^\d+$', k)])
+def ask_audit(contest_id, keys):
+  keys = ["%d"%int(k) for k in keys if re.match(r'^\d+$', k)]
+  return ask_backend("audit", [contest_id] + keys)
   #return ask_backend("find", ["%06d"%(int(key),) for key in keys])
 
 def ask_backend(cmd, keys):
@@ -52,16 +42,18 @@ def parse_tsv_response(data, shingles, sources):
   src_dict = {}
   for line in data.split("\n"):
     fields = line.split("\t")
+    if len(fields) < 3:
+      continue
     if not freq_dict.has_key(fields[0]):
       freq_dict[fields[0]] = 0;
     freq_dict[fields[0]] += 1
-    src = fields[-1]
+    src = ":".join(fields[1:3])
     if not src_dict.has_key(src):
       src_dict[src] = 0
     src_dict[src] += 1
   
   for pair in sorted(src_dict.items(), key=lambda x:-x[1]):
-    sources.append([pair[0], pair[1]])
+    sources.append(pair[0].split(":") + [pair[1]])
   
   for shingle in shingles:
     if freq_dict.has_key(shingle['value']):

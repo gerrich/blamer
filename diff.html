@@ -1,5 +1,6 @@
 <html>
   <head>
+    <title>Blamer; Diff: {{ contest_id_a | e }} {{ runid_a.zfill(6) |e }} vs {{ contest_id_b | e }} {{ runid_b.zfill(6) |e }}</title>
     <style>
       .shingled {
         font-family: 'Courier New'
@@ -13,7 +14,8 @@
     </style>
   </head>
   <body>
-    <h1>DIFF</h1>
+    <h1><a href='/home'>Поймай жука!</a></h1>
+    <h2>DIFF: <a href="/file?contest_id={{contest_id_a|e}}&runid={{runid_a|e}}">{{contest_id_a|e}} {{ runid_a.zfill(6)|e }}</a> vs <a href="/file?contest_id={{contest_id_b|e}}&runid={{ runid_b|e}}">{{contest_id_b|e}} {{ runid_b.zfill(6)|e }}</a></h2>
     {{ table }}
   </body>
 </html>
